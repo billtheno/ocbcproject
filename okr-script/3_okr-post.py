@@ -1,6 +1,7 @@
 import csv
+import json
 from datetime import datetime
-import requests
+from urllib import request
 
 url = 'http://34.101.196.105:8080/rest/upraisesuccess/latest/objectives'
 headers = {
@@ -12,9 +13,6 @@ headers = {
 with open('okr-list.csv', newline='') as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
-        #print(eval(row['objectiveCycle']))
-        #print(datetime.strptime(row['startDate'], '%d-%b-%y').strftime('%Y-%m-%d'))
-        #print(datetime.strptime(row['dueDate'], '%d-%b-%y').strftime('%Y-%m-%d'))
         data = {
             "type": 1,
             "objectiveCycle": eval(row['objectiveCycle']),
@@ -29,7 +27,10 @@ with open('okr-list.csv', newline='') as csvfile:
             "sharedTeams" : [],
             "sharedUsers" : []
         }
-        #print(data)
-
-        response = requests.post(url, json=data, headers=headers)
-        print(response.text)
+        
+        req = request.Request(url, data=json.dumps(data).encode('utf-8'), headers=headers, method='POST')
+        try:
+            with request.urlopen(req) as response:
+                print(response.read().decode('utf-8'))
+        except request.HTTPError as e:
+            print(f"Request failed with status code {e.code}.")
